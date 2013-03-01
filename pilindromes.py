@@ -52,7 +52,7 @@ class NumReader(object):
         if self.digits_read == self.limit:
             return False
         #File closed
-        if file is None:
+        if self.file is None:
             return False
         #Otherwise should be ok
         return True
@@ -117,11 +117,28 @@ next_d = source.read(100)
 max_length = 0
 max_pos = None
 while source.has_digits:
-    #Look for palindrome centered at current 
-    cur_length = pal_length(old_d, next_d)
+    #Look for palindrome centered at current digit
+    cur_length = 1 + 2 * pal_length(old_d, next_d)
     if cur_length > max_length:
         max_length = cur_length
-        max_pos = source.digits_read
+        max_pos = source.digits_read - len(next_d)
+        print("New max length " + str(cur_length) + " at " + str(max_pos))
 
-    #Look for "even" palindrome centered at current
+    #Look for "even" palindrome centered at current digit
+    #Shift current digit into old buffer
     old_d.insert(0, cur_d)
+    cur_d = None
+    cur_length = 2 * pal_length(old_d, next_d)
+    if cur_length > max_length:
+        max_length = cur_length
+        max_pos = source.digits_read - len(next_d)
+        print("New max length " + str(cur_length) + " at " + str(max_pos))
+
+    #Pull next digit
+    cur_d = next_d.pop(0)
+
+    #Maintain buffers
+    if len(old_d) > 50:
+        old_d = old_d[:50]
+    if len(next_d) < 50:
+        next_d += source.read(50)
